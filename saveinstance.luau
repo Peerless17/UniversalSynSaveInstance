@@ -6160,6 +6160,8 @@ local function synsaveinstance(...)
 		Player doesn't spawn? Move or delete the scripts in StarterPlayer, then run game:GetService("Players").CharacterAutoLoads = true
 		Use "Play Here" instead of "Play" to spawn where your Camera is.
 
+		GUI missing from StarterGui? Save again with IsolatePlayers = true, then check Players/<LocalPlayer>/PlayerGui.
+
 		Chat broken? Delete everything in TextChatService/Chat, or run game:GetService("Chat"):ClearAllChildren() game:GetService("TextChatService"):ClearAllChildren()
 
 		Union/MeshPart collisions broken? Run this in the Studio Command Bar:
