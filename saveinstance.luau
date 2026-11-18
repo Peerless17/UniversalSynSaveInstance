@@ -3798,6 +3798,7 @@ end
 	@within UniversalSynSaveInstance
 	@yields
 	@param ... table | SaveInstanceOptions | Instance | string -- [UniversalSynSaveInstance.SaveInstanceOptions] tables are combined in order. An executor's native `SaveInstanceOptions` object is read the same way as a table, but not every property may be supported, because the property set varies per executor. An [Instance] becomes `Object`. A string becomes `FilePath`; an empty string counts as not set. A list of Instances becomes `ExtraInstances` and sets `IsModel = true`. If you pass Instances directly and do not set `mode`, `mode` becomes invalid, so only those Instances are saved.
+	@return string? -- The output file path when saving to a file, or `nil` when `Callback` or `CopyToClipboard` is used.
 ]=]
 
 -- * Accepts any number of arguments, of any type, in any order:
@@ -3807,7 +3808,7 @@ end
 -- *   Instance -> Object option
 local function synsaveinstance(...)
 	if USSI.Running then
-		return
+		return error("saveinstance is already initializing another save", 2)
 	end
 	USSI.Running = true
 	-- do -- ? Causes issues on SirHurt (Kick lacking Capability "Consequences"), let threads operate on their default/preferred identity set by the developers
@@ -4177,10 +4178,8 @@ local function synsaveinstance(...)
 			Icon = "rbxassetid://9072920609",
 		})
 
-		warn(text)
-
 		USSI.Running = nil
-		return
+		return error(text, 2)
 	end
 
 	local InstancesOverrides = {}
@@ -4500,7 +4499,7 @@ local function synsaveinstance(...)
 		USSI.Running = nil
 
 		if savedFiles[placename] then -- ? AvoidFileOverwrite kinda messes with this, but shouldn't be an issue
-			return
+			return error("saveinstance is already saving to " .. placename, 2)
 		end
 
 		savedFiles[placename] = true
@@ -5829,8 +5828,7 @@ local function synsaveinstance(...)
 	local function emitXML(ctx)
 		local chunks = table.create(1)
 		local savebuffer, savebuffer_size = {}, 1
-		local header =
-			'<!-- Saved by UniversalSynSaveInstance (Join to Copy Games) https://discord.gg/wx4ThpAsmw --><roblox version="4">'
+		local header = '<roblox version="4">'
 		local refs = ctx.refs
 
 		local function ReturnProperty(tag, propertyName, value)
@@ -6045,7 +6043,8 @@ local function synsaveinstance(...)
 			end
 		end
 
-		savebuffer[savebuffer_size] = "</roblox>"
+		savebuffer[savebuffer_size] =
+			"</roblox>"
 		savebuffer_size += 1
 		save_cache()
 		return chunks
@@ -6452,11 +6451,20 @@ local function synsaveinstance(...)
 	local function Connect(event, func)
 		table.insert(Connections, event:Connect(func))
 	end
-	local function Cleanup()
+	local function Cleanup(aborted)
 		for _, connection in Connections do
 			connection:Disconnect()
 		end
 		USSI.SavedFiles[placename] = nil
+		if aborted then
+			if OPTIONS.BoostFPS then
+				pcall(service.RunService.Set3dRenderingEnabled, service.RunService, true)
+			end
+			if USSI.StatusGui then
+				USSI.StatusGui:Destroy()
+				USSI.StatusGui = nil
+			end
+		end
 	end
 	do
 		local Players = service.Players
@@ -6995,9 +7003,8 @@ local function synsaveinstance(...)
 			)
 
 			if not base64encode then
-				warn("base64encode not found")
-				Cleanup()
-				return
+				Cleanup(true)
+				return error("saveinstance: base64encode not found", 2)
 			end
 
 			local function b64DecWorks(f)
@@ -7094,10 +7101,8 @@ local function synsaveinstance(...)
 			if ok then
 				ClassList = result
 			else
-				warn("Failed to load the API Dump")
-				warn(result)
-				Cleanup()
-				return
+				Cleanup(true)
+				return error("saveinstance: failed to load the API Dump: " .. tostring(result), 2)
 			end
 		end
 	end
@@ -7132,6 +7137,11 @@ local function synsaveinstance(...)
 
 	Cleanup()
 
+	if ok and not (CopyToClipboard or Callback) and isfile and not isfile(placename) then
+		ok = false
+		err = "saveinstance: the output file was not created: " .. placename
+	end
+
 	elapse_t = os.clock() - elapse_t
 	local Log10 = math.log10(elapse_t)
 	local ExtraTime = 10
@@ -7159,9 +7169,17 @@ local function synsaveinstance(...)
 		end)
 	end
 
-	if OPTIONS.ShutdownWhenDone and ok then
+	if not ok then
+		return error(err, 2)
+	end
+
+	if OPTIONS.ShutdownWhenDone then
 		task.wait(Log10 * 2 + ExtraTime)
 		game:Shutdown()
+	end
+
+	if not (CopyToClipboard or Callback) then
+		return placename
 	end
 end
 
