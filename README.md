@@ -1,18 +1,18 @@
 > [!IMPORTANT]
 > Independent, unofficial project. Not affiliated with, endorsed by, or officially connected to Roblox Corporation. "Luau" is a trademark of Roblox Corporation.
 <p align="center">
-  <img height="300px" style="margin: 0; padding: 0" src=".moonwave\static\logo.png" />
+  <img height="300px" style="margin: 0; padding: 0" src=".moonwave/static/logo.png" />
 </p>
 
 # Loadstring
 
 ```lua
 local Params = {
- RepoURL = "https://raw.githubusercontent.com/luau/UniversalSynSaveInstance/main/",
+ RepoURL = "https://git.qilk.de/misc/UniversalSynSaveInstance/raw/branch/master/",
  SSI = "saveinstance",
 }
 local synsaveinstance = loadstring(game:HttpGet(Params.RepoURL .. Params.SSI .. ".luau", true), Params.SSI)()
-local Options = {} -- Documentation here https://luau.github.io/UniversalSynSaveInstance/api/UniversalSynSaveInstance
+local Options = {} -- Documentation here https://git.qilk.de/misc/UniversalSynSaveInstance/src/branch/gh-pages/search-doc.json
 synsaveinstance(Options)
 ```
 
@@ -21,40 +21,9 @@ synsaveinstance(Options)
 Or shortly USSI, a project aimed at resurrecting saveinstance function from Synapse X.<br />
 Reason: Many tools fail miserably at providing good user experience when it comes to tinkering with saving instances.
 
-> [!WARNING]
-> As stated under the Section 7 (b) in the LICENSE:
-> - You **MUST** always include the following Credit string: `UniversalSynSaveInstance https://discord.gg/wx4ThpAsmw`
-> - You are **NOT** allowed to claim authorship of the source code provided in this repository
-> - You **MUST** always include the following [License](https://github.com/luau/UniversalSynSaveInstance/blob/main/LICENSE)
-
-## Disclaimer
-
-This project is provided for development, debugging, archival, and research purposes within the Roblox platform.
-
-It is not intended for misuse, including violating platform rules, unauthorized access, or redistribution of content without permission.
-
-Users are responsible for ensuring their usage complies with all applicable rules, including Roblox’s Terms of Use.
-
-The maintainers do not support or condone misuse of this software and are not responsible for how it is used.
-
-> [!TIP]
-> If this script is helpful to you, please click `⭐ Star` in the upper right corner of the page to support it, thank you!
-
 # Documentation
 
 [Documentation]
-
-# 💖 Support Us & Our Work
-
-<a href='https://ko-fi.com/M4M1JNH5G' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi2.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' title='KO-FI' /></a>
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M1JNH5G "KO-FI")
-<br />
-[![ko-fi](https://user-images.githubusercontent.com/95628489/231759262-25661006-b7ca-4967-a79d-2b465cd9575a.png)](https://ko-fi.com/M4M1JNH5G "KO-FI QR-CODE")
-
-# DISCORD SERVER:<br />
-
-<https://discord.com/invite/wx4ThpAsmw> **/** <https://discord.gg/wx4ThpAsmw><br />
-[<img src="https://discordapp.com/api/guilds/1022465460517740654/widget.png?style=banner2" alt="Our Official Discord Server!"></img>](https://discord.com/invite/wx4ThpAsmw)<br />
 
 # TO-DOs
 
@@ -114,7 +83,7 @@ resources include:
 
 \*\*\* View source code of this file for more credits
 
-[Documentation]: https://luau.github.io/UniversalSynSaveInstance/api/UniversalSynSaveInstance
+[Documentation]: https://git.qilk.de/misc/UniversalSynSaveInstance/src/branch/gh-pages/search-doc.json
 [@Acrillis]: https://github.com/Acrillis
 [@Anaminus]: https://github.com/Anaminus
 [@Dekkonot]: https://github.com/Dekkonot
