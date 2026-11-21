@@ -8,11 +8,11 @@
 
 ```lua
 local Params = {
- RepoURL = "https://git.qilk.de/misc/UniversalSynSaveInstance/raw/branch/master/",
- SSI = "saveinstance",
+	RepoURL = "https://raw.githubusercontent.com/Peerless17/UniversalSynSaveInstance/master/",
+	SSI = "saveinstance",
 }
 local synsaveinstance = loadstring(game:HttpGet(Params.RepoURL .. Params.SSI .. ".luau", true), Params.SSI)()
-local Options = {} -- Documentation here https://git.qilk.de/misc/UniversalSynSaveInstance/src/branch/gh-pages/search-doc.json
+local Options = {} -- See Documentation below
 synsaveinstance(Options)
 ```
 
@@ -23,7 +23,77 @@ Reason: Many tools fail miserably at providing good user experience when it come
 
 # Documentation
 
-[Documentation]
+Detailed documentation is available at [Online Documentation] or in the reference table below.
+
+### Basic Usage
+
+UniversalSynSaveInstance accepts an options table, instance, or file path in any order:
+
+```lua
+-- Save place with custom options
+synsaveinstance({
+	mode = "optimized", -- "optimized", "full", "scripts"
+	SafeMode = true,
+	DecompileTimeout = 15,
+})
+
+-- Save specific model as .rbxm/.rbxmx
+synsaveinstance(workspace.MyModel)
+
+-- Save multiple instances as a model
+synsaveinstance({ workspace.ModelA, workspace.ModelB })
+
+-- Save with custom file name
+synsaveinstance({ mode = "scripts" }, "MyScripts.rbxl")
+```
+
+### Options (`SaveInstanceOptions`)
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `mode` | `string` | `"optimized"` | What to save: `"optimized"` (key services like Workspace, Players, Lighting, ReplicatedStorage), `"full"` (entire game tree), or `"scripts"` (saves parts containing LuaSourceContainers). |
+| `Binary` | `boolean` | `true` | Save binary format (`.rbxl`/`.rbxm`) for smaller file size and faster loading. Automatically falls back to XML if executor cannot write binary data. |
+| `CompressionMode` | `string \| boolean` | `"zstd"` | Compression format for binary files: `"zstd"`, `"lz4"`, or `false` for uncompressed. |
+| `CompressionLevel` | `number` | `9` | Zstandard compression level (-7 to 22). Higher values produce smaller files but take longer. |
+| `FilePath` | `string \| false` | `false` | Custom output file name/path. Auto-appends file extension if omitted. |
+| `SafeMode` | `boolean` | `false` | Disconnects LocalPlayer upon saving, enabling `KillAllScripts` and `BoostFPS`. Recommended. |
+| `KillAllScripts` | `boolean` | `false` | Disables and stops running scripts prior to saving to prevent interference. |
+| `BoostFPS` | `boolean` | `false` | Disables 3D rendering while saving to maximize performance and re-enables it upon completion. |
+| `Object` | `Instance \| false` | `false` | Save a specific Instance instead of the entire game. Automatically sets `IsModel = true`. |
+| `IsModel` | `boolean` | `false` | Save as a model (`.rbxm`/`.rbxmx`) instead of a place (`.rbxl`/`.rbxlx`). |
+| `ShowStatus` | `boolean` | `true` | Displays progress, saving state, file size, and elapsed time on-screen. |
+| `ReadMe` | `boolean` | `true` | Adds a `README` script inside the save with place ID, date, executor, and diagnostics. |
+| `Decompile` | `boolean` | `true` | Decompiles LuaSourceContainers into source code. If disabled, scripts will have an empty/commented source. |
+| `SaveBytecode` | `boolean` | `false` | Appends compiled bytecode as comments if supported by executor (`getscriptbytecode`). |
+| `DecompileTimeout` | `number` | `10` | Timeout per script decompile in seconds (`-1` to disable timeout). |
+| `BytecodeTimeout` | `number` | `3` | Timeout per bytecode extraction in seconds (`-1` to disable timeout). |
+| `DecompileIgnore` | `table` | `{TextChatService}` | Instances or classes to skip during decompilation. |
+| `SourceCache` | `table \| false` | `false` | Pre-defined source mapping for instances instead of decompiling. |
+| `DecompileJobless` | `boolean` | `false` | Only uses scripts already cached in decompiler cache. |
+| `scriptcache` | `boolean` | `true` | Caches decompiled script output to avoid redundant decompilations across runs. |
+| `RecoverScriptsFromAssets` | `boolean` | `true` | Attempts to recover original script source from published assets. |
+| `IsolatePlayers` | `boolean` | `false` | Groups all Player objects inside a `"Players"` folder instead of the Players service. |
+| `IsolateStarterPlayer` | `boolean` | `false` | Isolates StarterPlayer scripts and characters. |
+| `IsolateLocalPlayer` | `boolean` | `false` | Isolates LocalPlayer components and PlayerGui. |
+| `NilInstances` | `boolean` | `false` | Saves instances parented to `nil` (using `getnilinstances` if supported). |
+| `IgnoreNotArchivable` | `boolean` | `true` | Saves objects even if their `Archivable` property is `false`. |
+| `SaveNotCreatable` | `boolean` | `false` | Converts non-creatable Roblox classes to creatable alternatives (e.g., Folder). |
+| `IgnoreDefaultProperties` | `boolean` | `true` | Skips properties that equal class default values (XML format only). |
+| `IgnoreDefaultPlayerScripts` | `boolean` | `false` | Skips Roblox built-in player scripts (PlayerModule, ChatScript, etc.). |
+| `SharedBinaryStrings` | `boolean` | `false` | Deduplicates identical binary strings/buffers to save space. |
+| `TreatUnionsAsParts` | `boolean` | `false` | Converts PartOperations (CSG) to standard Parts if executor fails to extract union data. |
+| `ShutdownWhenDone` | `boolean` | `false` | Closes Roblox client once saving finishes. |
+| `__DEBUG_MODE` | `boolean \| function` | `false` | Enables verbose debug warnings and logs. |
+
+### Legacy Aliases & Shortcuts
+
+UniversalSynSaveInstance supports familiar options from older saveinstance implementations (Synapse X, KRNL, Dex):
+- `noscripts = true` &rarr; `Decompile = false`
+- `XML = true` &rarr; `Binary = false`
+- `DisableCompression = true` &rarr; `CompressionMode = false`
+- `Overwrite = true` &rarr; `AvoidFileOverwrite = false`
+- `RemovePlayerCharacters = true` &rarr; `SavePlayerCharacters = false`
+- `Clipboard = true` &rarr; `CopyToClipboard = true`
 
 # TO-DOs
 
@@ -83,7 +153,8 @@ resources include:
 
 \*\*\* View source code of this file for more credits
 
-[Documentation]: https://git.qilk.de/misc/UniversalSynSaveInstance/src/branch/gh-pages/search-doc.json
+[Online Documentation]: https://peerless17.github.io/UniversalSynSaveInstance/api/UniversalSynSaveInstance
+[Documentation]: https://peerless17.github.io/UniversalSynSaveInstance/api/UniversalSynSaveInstance
 [@Acrillis]: https://github.com/Acrillis
 [@Anaminus]: https://github.com/Anaminus
 [@Dekkonot]: https://github.com/Dekkonot
