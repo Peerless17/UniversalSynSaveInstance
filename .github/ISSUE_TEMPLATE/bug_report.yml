@@ -2,7 +2,7 @@ name: Bug Report
 description: Create a report to help us improve
 title: "[BUG] "
 labels: ["bug"]
-assignees: ["phoriah"]
+assignees: ["Peerless17"]
 body:
   - type: markdown
     attributes:
@@ -67,12 +67,12 @@ body:
       render: lua
       value: |
         local Params = {
-            RepoURL = "https://raw.githubusercontent.com/luau/UniversalSynSaveInstance/main/",
+            RepoURL = "https://raw.githubusercontent.com/Peerless17/UniversalSynSaveInstance/master/",
             SSI = "saveinstance",
         }
         local synsaveinstance = loadstring(game:HttpGet(Params.RepoURL .. Params.SSI .. ".luau", true), Params.SSI)()
 
-        local Options = {} -- Documentation here https://luau.github.io/UniversalSynSaveInstance/api/SynSaveInstance
+        local Options = {} -- Documentation here https://peerless17.github.io/UniversalSynSaveInstance/api/UniversalSynSaveInstance
 
         synsaveinstance(Options)
     validations:
