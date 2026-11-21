@@ -7146,8 +7146,20 @@ local function synsaveinstance(...)
 	local ExtraTime = 10
 
 	if not ok then
-		warn("Error found while saving:")
-		warn(err)
+		local errStr = tostring(err)
+		warn("Error found while saving:\n" .. errStr)
+		print("USSI Error found while saving:\n" .. errStr)
+		if writefile then
+			pcall(writefile, "ussi_error.txt", errStr)
+		end
+		local setclip = setclipboard or toclipboard or (Clipboard and Clipboard.set)
+		if setclip then
+			pcall(setclip, errStr)
+		end
+		local rprint = rconsolewarn or rconsoleprint or printconsole
+		if rprint then
+			pcall(rprint, "USSI Error: " .. errStr .. "\n")
+		end
 	end
 	if StatusText then
 		task.spawn(function()
@@ -7160,9 +7172,11 @@ local function synsaveinstance(...)
 					task.cancel(LoadingThread)
 					LoadingThread = nil
 				end
-				StatusText.Text = "Failed! Check F9 console for more info"
-				StatusText.TextColor3 = Color3.new(1)
-				task.wait(Log10 + ExtraTime)
+				local shortErr = string.sub(string.gsub(tostring(err), "\n.*", ""), 1, 100)
+				StatusText.Size = UDim2.new(0.7, 0, 0, 45)
+				StatusText.Text = "Failed: " .. shortErr .. "\n(Copied to clipboard & ussi_error.txt)"
+				StatusText.TextColor3 = Color3.new(1, 0.2, 0.2)
+				task.wait(Log10 + ExtraTime + 5)
 			end
 			StatusText:Destroy()
 		end)
