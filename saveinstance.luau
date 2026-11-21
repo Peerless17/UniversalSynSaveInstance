@@ -491,6 +491,8 @@ end
 -- 64-bit zigzag from u32 halves. No arithmetic, so `Restricted` (bit 63) --
 -- which makes the value negative as an i64 -- falls out correctly.
 local function zigzagHalves(hi, lo)
+	hi = hi or 0
+	lo = lo or 0
 	local sign = bit32.extract(hi, 31)
 	local shi = bit32.bor(bit32.lshift(hi, 1), bit32.extract(lo, 31))
 	local slo = bit32.lshift(lo, 1)
@@ -501,12 +503,16 @@ local function zigzagHalves(hi, lo)
 end
 
 local function u32FromHex(hex, at)
-	return tonumber(string.sub(hex, at, at + 7), 16)
+	if not hex or #hex < at + 7 then
+		return 0
+	end
+	return tonumber(string.sub(hex, at, at + 7), 16) or 0
 end
 
 -- Byte-plane writers
 
 local function pokeU32Planes(sbuf, o, n, v)
+	v = v or 0
 	local buf = sbuf.buf
 	local wu8 = buffer.writeu8
 	local rshift = bit32.rshift
@@ -517,8 +523,8 @@ local function pokeU32Planes(sbuf, o, n, v)
 end
 
 local function pokeU64Planes(sbuf, o, n, hi, lo)
-	pokeU32Planes(sbuf, o, n, hi)
-	pokeU32Planes(sbuf, o + 4 * n, n, lo)
+	pokeU32Planes(sbuf, o, n, hi or 0)
+	pokeU32Planes(sbuf, o + 4 * n, n, lo or 0)
 end
 
 local function interleavedU32Plane(sbuf, n, base, getU32ForIndex)
@@ -1420,7 +1426,10 @@ local Binary_Encoders = {
 		for i = 1, n do
 			local val = vals[i]
 			local o = base + (i - 1)
-			local hex = string.gsub(val, "%-", "")
+			local hex = type(val) == "string" and string.gsub(val, "%-", "") or ""
+			if #hex < 32 then
+				hex = string.rep("0", 32 - #hex) .. hex
+			end
 			local randHi, randLo = zigzagHalves(u32FromHex(hex, 1), u32FromHex(hex, 9))
 
 			pokeU32Planes(sbuf, o, n, u32FromHex(hex, 25))
@@ -3421,6 +3430,30 @@ do
 
 		local ClassesWhitelist, ClassesBlacklist = ClassPropertyExceptions.Whitelist, ClassPropertyExceptions.Blacklist
 
+		local function isPropertyBlacklisted(className, propName)
+			local cur = className
+			while cur and cur ~= "<<<ROOT>>>" do
+				local bl = ClassesBlacklist[cur]
+				if bl and bl[propName] then
+					return true
+				end
+				cur = tmp_classParents[cur]
+			end
+			return false
+		end
+
+		local function isPropertyWhitelisted(className, propName)
+			local cur = className
+			while cur and cur ~= "<<<ROOT>>>" do
+				local wl = ClassesWhitelist[cur]
+				if wl and wl[propName] then
+					return true
+				end
+				cur = tmp_classParents[cur]
+			end
+			return false
+		end
+
 		local API_Dump_Decoded = API_Dump
 
 		-- First pass (prep)
@@ -3510,8 +3543,8 @@ do
 						end
 
 						if
-							(Serialization.CanSave or ClassWhitelist and ClassWhitelist[PropertyName])
-							and not (ClassBlacklist and ClassBlacklist[PropertyName])
+							(Serialization.CanSave or isPropertyWhitelisted(ClassName, PropertyName))
+							and not isPropertyBlacklisted(ClassName, PropertyName)
 						then
 							local MemberTags = Member.Tags
 
